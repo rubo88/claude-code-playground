@@ -1,7 +1,7 @@
 {
   "name": "replay-theater",
-  "version": "0.1.0",
-  "description": "Replay Theater: step through the file edits Claude made in the last turn, one diff at a time.",
+  "version": "0.2.0",
+  "description": "Replay Theater: step through the file edits Claude made in the last turn, one diff at a time, with a plain-language note from Haiku on each step.",
   "author": {
     "name": "Claude Code DevRel"
   }

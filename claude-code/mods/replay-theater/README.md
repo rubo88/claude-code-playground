@@ -12,6 +12,8 @@ While a turn runs, Replay Theater records each file edit Claude makes (the Edit,
 
 Open it, and a pane shows one edit at a time: the file, the tool, a count of added and removed lines, and a short diff in red and green. A strip of numbered cells shows every step, with the current one highlighted, and the header reads "step 2 of 5". Prev, Next and Close buttons move through the steps.
 
+Under the diff, Haiku writes a short note in plain Spanish under **En pocas palabras**: what the step changes and, when the code shows it, what for. It is asked for only when you open the replay or move to a step, for that step and the next one, and kept for the session. If the call fails or takes more than 15 seconds, the pane says so and the replay works as before.
+
 Replay Theater only watches. It never blocks, changes or delays an edit.
 
 The patterns it demonstrates:
@@ -118,6 +120,7 @@ No environment variables or configuration.
 - Edits made by subagents are included in the main turn's replay.
 - Claude Code 2.1.280 has no MultiEdit tool. The mod handles MultiEdit, one step per edit, for builds that have it. That path is untested.
 - If the terminal can't place a pane, the replay is drawn in the band above the prompt instead. That fallback is untested, because every width we tried (80 and 120 columns) placed the pane.
+- The note is written by a model from the diff alone. It can be wrong, and it doesn't know why Claude made the change. Each step you view costs one short Haiku call; a replay you don't open costs nothing.
 - The band above the prompt is shared. If another mod also draws there, only one of them shows.
 
 ## Dependencies
