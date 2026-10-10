@@ -25,7 +25,7 @@ function world(on: any, answer: (e: any) => unknown) {
   return seen;
 }
 
-// One turn with two edits, then /replay.
+// One turn with three edits, then /replay.
 async function playTurn($: any) {
   await $.turn.start({ text: 'arregla el saludo', turnId: 't1' });
   await $.tool.call({ tool: 'Edit', file_path: '/tmp/project/a.py', old_string: 'print("hola")', new_string: 'print("hola, mundo")' });
