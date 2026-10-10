@@ -16,6 +16,8 @@ When Claude calls Bash with one of the commands below, Blast Radius stops the ca
 | `manage.py migrate`, `db:migrate`, `alembic upgrade`, `prisma migrate` | The pending migrations, from the tool's own status command. |
 | any other `migrate` | A note that it can't list the pending migrations for that tool. |
 
+While the pane waits, Haiku writes a short note in plain Spanish under **En pocas palabras**: what the command does, what would be lost, and whether it can be undone. It is built from the same measurement the pane shows. The buttons work before the note arrives, and if the call fails or takes more than 15 seconds the pane says so and works as before.
+
 Every other command runs as normal. If the command line moves first, with `cd dir &&`, `pushd`/`popd` or `git -C dir`, Blast Radius measures in that folder. A `cd` inside `( ... )` only applies inside the parentheses, as in the shell.
 
 The patterns it demonstrates:
@@ -44,7 +46,7 @@ The second try, after Proceed:
 
 ## How it was built
 
-- **Model:** built with Claude in Claude Code. The test runs and screenshots used Claude Sonnet 5. The mod itself doesn't call a model.
+- **Model:** built with Claude in Claude Code. The test runs and screenshots used Claude Sonnet 5. Since 0.2.0 the mod makes one Haiku call per held command, through `$.model.complete` on the session's own credentials.
 - **Prompt(s):** the mod started as one of ten ideas Claude wrote for mods. This is the idea as written:
 
   > **Blast Radius.** _See what a command will touch, before it runs._ When Claude runs a risky shell command, like `rm`, `git reset`, or a migration, the mod opens a pane. The pane lists the files and branches the command would change. The developer presses Proceed, or Cancel. It uses `tool.call` to hold the call, and `ui.render` on `Pane`, with `Button` elements. It adds a safety check, and it doesn't remove any, so it's safe to show. _A bigger project,_ because each command needs its own dry run.
@@ -123,6 +125,7 @@ No environment variables or configuration.
 - To list pending migrations, it runs the tool's own status command (for example `python3 manage.py showmigrations`), which loads your project's code before you choose Proceed or Cancel. If that fails, the pane says it couldn't list them.
 - A few harmless commands are held too, such as a commit whose message contains `; rm -rf`.
 - It checks one command at a time. It holds a call, but it doesn't sandbox it: after you press Proceed, the command runs as written.
+- The note is written by a model and can be wrong. The measured list above it is the authority. Each held command costs one short Haiku call; commands that aren't held cost nothing.
 - This is a safety net, not a permission system. Use [permission rules](https://code.claude.com/docs/en/settings) for a hard block.
 
 ## Dependencies
