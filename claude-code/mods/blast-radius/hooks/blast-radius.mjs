@@ -17,6 +17,10 @@
 // never gates it: the buttons work before it answers, and a failed or slow
 // call only leaves the note out.
 //
+// Switching it off: `/blast-radius` toggles it (or `on`, `off`, `status`). The
+// choice is kept in `$.store`, so it holds across sessions, and while it is off
+// the status line says so and risky commands run with only a toast.
+//
 // The host reads `on(...)` and `$.noun.method(...)` from source, so they are
 // spelled literally, and helpers that take `$` are top-level functions.
 
@@ -26,14 +30,45 @@ const HOLD_LIMIT_MS = 10 * 60 * 1000;
 const LIST_MAX = 10;
 const EXPLAIN_MODEL = "haiku";
 const EXPLAIN_TIMEOUT_MS = 15000;
+const COMMAND = "blast-radius";
+const OFF_KEY = "disabled";
+const OFF_STATUS = "⚠ Blast Radius apagado";
 
 // The call being held, or null. One at a time: Bash calls in a turn run in order.
 let held = null;
 
 export function register(on) {
+  on("session.start", async ($, e, next) => {
+    const r = await next(e);
+    await $.command.register({ name: COMMAND, description: "Blast Radius: encender o apagar (on, off, status)" });
+    if (await isOff($)) {
+      $.ui.status(OFF_STATUS);
+    }
+    return r;
+  });
+
+  on("command.run", { command: COMMAND }, async ($, e) => {
+    const arg = String(e.args ?? "").trim().toLowerCase();
+    const wasOff = await isOff($);
+    if (arg === "status") {
+      return { text: wasOff ? "Blast Radius está apagado. /blast-radius on para encenderlo." : "Blast Radius está encendido." };
+    }
+    if (arg !== "" && arg !== "on" && arg !== "off") {
+      return { text: "Uso: /blast-radius [on|off|status]. Sin nada, cambia de estado." };
+    }
+    const off = arg === "" ? !wasOff : arg === "off";
+    await $.store.set(OFF_KEY, off);
+    $.ui.status(off ? OFF_STATUS : undefined);
+    return { text: off ? "Blast Radius apagado: los comandos arriesgados ya no se frenan." : "Blast Radius encendido." };
+  });
+
   on("tool.call", { tool: "Bash" }, async ($, e, next) => {
     const risk = classify(String(e.command ?? ""));
     if (risk === null) {
+      return next(e);
+    }
+    if (await isOff($)) {
+      $.ui.toast(`Blast Radius está apagado: no he frenado ${risk.label}`);
       return next(e);
     }
     // One hold at a time. If another risky call is already held (a subagent's,
@@ -135,6 +170,14 @@ export function register(on) {
     }
     return draw($.ui.resolve(e), held);
   });
+}
+
+async function isOff($) {
+  try {
+    return (await $.store.get(OFF_KEY)) === true;
+  } catch {
+    return false; // can't read the switch: stay on
+  }
 }
 
 // ---- What counts as risky -------------------------------------------------

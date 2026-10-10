@@ -18,6 +18,8 @@ When Claude calls Bash with one of the commands below, Blast Radius stops the ca
 
 While the pane waits, Haiku writes a short note in plain Spanish under **En pocas palabras**: what the command does, what would be lost, and whether it can be undone. It is built from the same measurement the pane shows. The buttons work before the note arrives, and if the call fails or takes more than 15 seconds the pane says so and works as before.
 
+To switch it off without uninstalling, type `/blast-radius` (it toggles), or `/blast-radius off`, `on` or `status`. The choice is kept across sessions. While it is off the status line says so, and a command it would have held runs at once with a short toast.
+
 Every other command runs as normal. If the command line moves first, with `cd dir &&`, `pushd`/`popd` or `git -C dir`, Blast Radius measures in that folder. A `cd` inside `( ... )` only applies inside the parentheses, as in the shell.
 
 The patterns it demonstrates:
